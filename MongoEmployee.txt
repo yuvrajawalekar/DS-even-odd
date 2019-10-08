@@ -1,0 +1,96 @@
+Create a Employee Collection add 5 documents:
+Example:
+{emono:111,ename:”Deepali
+Vaidya”,sal:40000.00,dept:{deptno12,dname:,”Hr”,dloc:”Mumbai}, Desg:”Analyst”,mgr:{name:”Satish”,num:111},project:[{name:”Project-
+1”,Hrs:4},{name:”project- 2”,Hrs:4}]}
+
+
+db.employee.insert({empno:111, ename:"Dipali Vaidya", sal:40000, 
+dept:{deptno:12, dname:"HR", dloc:"Mumbai"},
+Desg:"Analyst",mgr:{name:"Priya",num:112}, 
+project:[{name:"Project_1",hrs:4},{name:"Project_2",hrs:4}]});
+
+
+db.employee.insert({empno:112, ename:"Priya Baheti", sal:50000, dept:{deptno:13, dname:"Purchase", dloc:"Pune"},Desg:"Manager",mgr:{name:"Mayank",num:113}, project:[{name:"Project_2",hrs:4},{name:"Project_3",hrs:4}]});
+
+
+db.employee.insert({empno:113, ename:"Mayank Raghuvanshi", sal:60000, dept:{deptno:14, dname:"Accounting", dloc:"Nashik"},Desg:"developer",mgr:{name:"Dipali",num:111}, project:[{name:"Project_3",hrs:4},{name:"Project_4",hrs:4}]});
+
+
+db.employee.insert({empno:114, ename:"Rakshit Sheth", sal:70000, dept:{deptno:15, dname:"Research", dloc:"Nagpur"},Desg:"Team Lead",mgr:{name:"Priya",num:112}, project:[{name:"Project_4",hrs:4},{name:"Project_5",hrs:4}]});
+
+
+db.employee.insert({empno:115, ename:"Prasad Deshkar", sal:80000, dept:{deptno:14, dname:"Accounting", dloc:"Nanded"},Desg:"VP",mgr:{name:"Mayank",num:113}, project:[{name:"Project_3",hrs:4},{name:"Project_4",hrs:4}]});
+
+
+1.All Employee’s with the desg as ‘developer’ are now called as (AO) Administrative Officers. Update the Employee collection for this.
+
+db.employee.update({Desg:"developer"},{$set:{Desg:"Administrative Officer"}},{multi:true, upsert:true});
+
+2.Change the number of hours for project-1 to 5 for all employees with designation analyst.
+
+db.employee.update({Desg:"Analyst"},{$set:{'project.0.hrs':5}},{multi:true, upsert:true});
+
+3.Add 2 projects project-3 and project-4 for employee whose name starts with ”Dip” with 2 hrs.
+
+db.employee.update({ename:/^[Dip]/},{$push:{project:{$each:[{name:"Project_3",hrs:2},{name:"Project_4",hrs:2}]}}},{multi:true, upsert:true})
+
+4.Add bonus rs 2000 for all employees with salary > 50000 and 1500 if salary <50000 and > 30000 otherwise bonus will be 1000.
+
+db.employee.update(
+{sal:{$gt:50000}},{$inc:{sal:2000}},
+{sal:{$lt:50000}},{$inc:{sal:1500}},
+{sal:{$gt:30000}},{$inc:{sal:l000}},
+{multi:true,upsert:true});
+
+
+db.employee.update({sal:{$gt:50000}},{$inc:{sal:2000}}, {multi:true,upsert:true});
+
+5.Change manager name to Tushar for all employees whose manager is currently “priya”
+And manager number to 3333.
+
+db.employee.update({'mgr.name':"Priya"},{$set:{'mgr.name':"Tushar",'mgr.num':3333}},{multi:true,upsert:true})
+
+6.Increase salary of all employees from “purchase department” by 15000.
+
+db.employee.update({'dept.dname':"Purcahse"},{$inc:{sal:15000}},{multi:true})
+
+7.Decrease number of hrs by 2 for all employees who are working on project-2.
+
+db.employee.update({'project.name':"Project_2"},{$inc:{hrs:-2}},{multi:true})
+
+8.Delete project-2 from all employee document if they are working on the project for 4 hrs.
+
+db.employee.update({},{$pull:{project:{name:'Project_2',hrs:4}}},{multi:true})
+
+9.Change the salary of employees to 10000 only if their salary is < 50000.
+
+db.employee.update({sal:{$lt:50000}},{$set :{sal:10000}},{multi:true})
+
+10.Increase bonus of all employees by 500 if the bonus is <2000 or their salary is < 20000 or if employee belong to sales department.
+
+db.employee.update({sal:{$lt:50000}},{$inc:{sal:2000}},{})
+
+11.Add 2 new project at position 2 for all employees with designation analyst or salary is equal to either 30000 or 33000 or 35000.
+
+db.employee.update({Desg:"Analyst"},{$push:{project:{$each:[{name:"Project_3",hrs:2},{name:"Project_4",hrs:2}], $position:2}}},{multi:true})
+
+12.Delete last project of all employees with department name is “HR” and if the location is Mumbai
+
+db.employee.update(
+{$and:[{'dept.dname':"HR"},{'dept.dloc':"Mumbai"}]},
+{$pull:{},{project:{name:'Project_2',hrs:4}}}},
+{multi:true})
+
+
+db.employee.update({'dept.dname':"HR"},{'dept.dloc':"Mumbai"},{$pull:{},{project:{name:'Project_2',hrs:4}}},{multi:true})
+
+13.Change designation of all employees to senior programmer if they are working on name:”Project-3” for 4 hrs.
+
+db.employee.update({project:{name:'Project_3',hrs:4}},{$set :{Desg:"senior programmer"}},{multi:true})
+
+14.Add list of hobbies in all employees document whose manager is Tushar or Mayank.
+
+db.employee.aggregate([{$addFields:{hobbies:"Reading"}}])
+
+db.employee.update({'mgr.name':{$in:["Tushar","Mayank"]}},{$set:{hobbies:"sleeping"}},{multi:true})
